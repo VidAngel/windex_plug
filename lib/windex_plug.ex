@@ -1,29 +1,45 @@
 defmodule WindexPlug do
-  use Plug.Router
   import Plug.Conn
+  use Plug.Router
+  plug Plug.Static, at: "/static", from: {:windex_plug, "/priv/static"}
+
+  use Plug.ErrorHandler
+
+
+  plug :match
+  plug :dispatch, builder_opts()
+
+  plug Plug.Parsers, parsers: [:json],
+                     pass:  ["application/json"],
+                     json_decoder: Jason
 
   def defaults do
     [
       hmac_key: :crypto.strong_rand_bytes(32) |> Base.encode16,
       hmac_ttl: 10*60, # in seconds
-      command_module: CommandList.Default
+      command_module: WindexPlug.CommandList.Default
     ]
   end
 
   def init(opts \\ []), do: Keyword.merge(defaults(), opts)
 
-  forward "/novnc", to: Plug.Static, init_opts: [at: "*", from: {:plug_windex, "priv/novnc"}]
-
   post "/run" do
-    form = %{}
-    command = validate!(form['id'], opts[:hmac_ttl], opts[:hmac_key])
+    IO.inspect conn.body_params
+    command = validate!(conn.body_params["id"], opts[:hmac_ttl], opts[:hmac_key])
     {port, password} = Windex.spawn_server(command)
-    send_resp(conn, 200, password)
+    send_resp(conn, 200, Jason.encode!(%{port: port, password: password}))
   end
 
-  match _, do: send_resp(conn, 404, "oops")
+  get "/" do
+    form = apply(opts[:command_module], :commands, [])
+    |> Enum.map(fn c -> %{id: WindexPlug.hmac(c, opts[:hmac_key]), label: inspect(c)} end)
+    |> Jason.encode!
+    send_resp(conn, 200, form)
+  end
 
-  defp hmac(term, key) do
+  match "/*_", do: send_resp(conn, 404, "404 - Not Found")
+
+  def hmac(term, key) do
     encoded = term |> :erlang.term_to_binary |> Base.encode16
     creation = DateTime.utc_now |> DateTime.to_unix
     hmac = :crypto.hmac(:sha256, key, "#{encoded}.#{creation}") |> Base.encode16
@@ -37,6 +53,10 @@ defmodule WindexPlug do
     true = (now - creation) < ttl
     ^hmac = :crypto.hmac(:sha256, key, "#{term}.#{creation}") |> Base.encode16
     term |> Base.decode16! |> :erlang.binary_to_term
+  end
+
+  defp handle_errors(conn, _) do
+    send_resp(conn, conn.status, "Something went wrong")
   end
 
   defmodule CommandList do

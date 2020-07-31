@@ -21,8 +21,9 @@ defmodule WindexPlug.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:windex, git: "git@github.com:VidAngel/windex.git", tag: "0.3.0"},
+      {:windex, git: "git@github.com:VidAngel/windex.git", tag: "0.3.1"},
       {:plug, "~> 1.10.3"},
+      {:jason, "~> 1.2.1"},
     ]
   end
 end
