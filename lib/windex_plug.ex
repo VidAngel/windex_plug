@@ -31,6 +31,7 @@ defmodule WindexPlug do
   end
 
   get "/" do
+    IO.inspect "HEY"
     form = apply(opts[:command_module], :commands, [])
     |> Enum.map(fn c -> %{id: WindexPlug.hmac(c, opts[:hmac_key]), label: inspect(c)} end)
     |> Jason.encode!
