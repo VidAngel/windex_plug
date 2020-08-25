@@ -24,7 +24,6 @@ defmodule WindexPlug do
   def init(opts \\ []), do: Keyword.merge(defaults(), opts)
 
   post "/run" do
-    IO.inspect conn.body_params
     command = validate!(conn.body_params["id"], opts[:hmac_ttl], opts[:hmac_key])
     {port, password} = Windex.spawn_server(command)
     send_resp(conn, 200, Jason.encode!(%{port: port, password: password}))
