@@ -1,6 +1,7 @@
 defmodule WindexPlug do
   import Plug.Conn
   use Plug.Router
+  require Logger
 
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
