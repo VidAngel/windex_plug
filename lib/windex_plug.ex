@@ -1,17 +1,17 @@
 defmodule WindexPlug do
   import Plug.Conn
   use Plug.Router
-  plug Plug.Static, at: "/static", from: {:windex_plug, "/priv/static"}
 
+  plug Plug.Parsers,
+    parsers: [:urlencoded, :multipart, :json],
+    json_decoder: Jason
+
+  plug Plug.Static, at: "/static", from: {:windex_plug, "/priv/static"}
   use Plug.ErrorHandler
 
-
+  plug :fetch_query_params
   plug :match
   plug :dispatch, builder_opts()
-
-  plug Plug.Parsers, parsers: [:json],
-                     pass:  ["application/json"],
-                     json_decoder: Jason
 
   def defaults do
     [
