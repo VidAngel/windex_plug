@@ -54,7 +54,8 @@ defmodule WindexPlug do
     term |> Base.decode16! |> :erlang.binary_to_term
   end
 
-  defp handle_errors(conn, _) do
+  defp handle_errors(conn, %{kind: kind, reason: reason, stack: stack}) do
+    Logger.error [inspect(kind), ?\s, inspect(reason), ?\s, inspect(stack)]
     send_resp(conn, conn.status, "Something went wrong")
   end
 
