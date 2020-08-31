@@ -26,7 +26,7 @@ defmodule WindexPlug do
 
   post "/run" do
     params = conn.body_params
-    Logger.info(params)
+    Logger.debug(inspect(params))
     command = validate!(params["id"], opts[:hmac_ttl], opts[:hmac_key])
     {port, password} = Windex.spawn_server(command)
     send_resp(conn, 200, Jason.encode!(%{port: port, password: password}))

@@ -4,7 +4,7 @@ defmodule WindexPlug.MixProject do
   def project do
     [
       app: :windex_plug,
-      version: "1.2.0-debug",
+      version: "1.2.1",
       elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
       deps: deps()
