@@ -46,7 +46,7 @@ defmodule WindexPlug do
     "#{encoded}.#{creation}.#{hmac}"
   end
 
-  defp validate!(id, ttl, key) do
+  def validate!(id, ttl, key) do
     [term, creation, hmac] = "#{id}" |> String.split(".")
     now = DateTime.utc_now |> DateTime.to_unix
     creation = creation |> String.to_integer
